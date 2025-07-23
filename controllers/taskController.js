@@ -32,14 +32,19 @@ const getTasks = asyncHandler(async (req, res) => {
 //@access Private
 const createTask = asyncHandler(async (req, res) => {
   const userId = req.user.id;
-  const { subject, lastDate, status } = req.body;
+  const { subject, lastDate, status, subtasks } = req.body;
 
   if (!subject || !lastDate) {
     res.status(StatusCodes.BAD_REQUEST);
     throw new Error("Subject and last date are required");
   }
 
-  const newTask = await addTask(userId, { subject, lastDate, status });
+  const newTask = await addTask(userId, {
+    subject,
+    lastDate,
+    status,
+    subtasks,
+  });
   if (!newTask) {
     res.status(StatusCodes.NOT_FOUND);
     throw new Error("User not found");
@@ -88,8 +93,9 @@ const removeTask = asyncHandler(async (req, res) => {
 //@route GET /api/tasks/:taskId/subtasks
 //@access Private
 const getSubtasksController = async (req, res) => {
+  console.log("req", req);
   try {
-    const { userId } = req; // assuming auth middleware
+    const userId = req.user.id; // auth middleware sets req.user
     const { taskId } = req.params;
 
     const subtasks = await getSubtasks(userId, taskId);
@@ -107,7 +113,7 @@ const getSubtasksController = async (req, res) => {
 //@access Private
 const updateSubtasksController = async (req, res) => {
   try {
-    const { userId } = req;
+    const userId = req.user.id;
     const { taskId } = req.params;
     const newSubtasks = req.body.subtasks;
 

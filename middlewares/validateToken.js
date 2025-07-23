@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 
 // Middleware to validate JWT token
 // This middleware checks if the request has a valid token in the Authorization header
-//for making route proctected and private we need to access token protection so anyone cannot access this route
+//for making route protected and private we need to access token protection so anyone cannot access this route
 
 const validateTokenHandler = asyncHandler(async (req, res, next) => {
   // Check if the request has an authorization header

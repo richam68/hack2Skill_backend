@@ -21,24 +21,40 @@ const addTask = async (userId, taskData) => {
   const user = await USERMODEL.findById(userId);
   if (!user) return null;
 
-  // Convert lastDate string into valid Date object using moment
-  const formattedDate = moment(taskData.lastDate, "DD/MM/YYYY", true);
-  if (!formattedDate.isValid()) {
-    throw new Error("Invalid date format. Use DD/MM/YYYY");
+  // Parse task lastDate
+  const taskDate = moment(taskData.lastDate, "DD/MM/YYYY", true);
+  if (!taskDate.isValid()) {
+    throw new Error("Invalid task date format. Use DD/MM/YYYY");
   }
+
+  // Parse each subtask's lastDate
+  const formattedSubtasks = (taskData.subtasks || []).map((sub, index) => {
+    const subtaskDate = moment(sub.lastDate, "DD/MM/YYYY", true);
+    if (!subtaskDate.isValid()) {
+      throw new Error(
+        `Invalid date format for Subtask ${index + 1}: ${sub.lastDate}`
+      );
+    }
+
+    return {
+      subject: sub.subject,
+      lastDate: subtaskDate.toDate(),
+      status: sub.status || "pending",
+      isDeleted: false,
+    };
+  });
 
   const newTask = {
     subject: taskData.subject,
-    lastDate: formattedDate.toDate(),
+    lastDate: taskDate.toDate(),
     status: taskData.status || "pending",
     isDeleted: false,
-    subtasks: [],
+    subtasks: formattedSubtasks,
   };
 
   user.tasks.push(newTask);
   await user.save();
 
-  //   return newTask;
   return user.tasks[user.tasks.length - 1];
 };
 
@@ -82,16 +98,24 @@ const deleteTask = async (userId, taskId) => {
 
 // Get all non-deleted subtasks for a task
 const getSubtasks = async (userId, taskId) => {
+  console.log("userId", userId);
+  console.log("taskId", taskId);
   const user = await USERMODEL.findById(userId);
   if (!user) return null;
 
-  const task = user.tasks.id(taskId);
+  const task = user.tasks.find(
+    (t) =>
+      t._id.toString() === taskId ||
+      (t.task_id && t.task_id.toString() === taskId)
+  );
+
   if (!task || task.isDeleted) return null;
 
   return task.subtasks.filter((sub) => !sub.isDeleted);
 };
 
 // Replace non-deleted subtasks (preserve deleted ones)
+
 const updateSubtasks = async (userId, taskId, newSubtasks) => {
   const user = await USERMODEL.findById(userId);
   if (!user) return null;
@@ -99,20 +123,29 @@ const updateSubtasks = async (userId, taskId, newSubtasks) => {
   const task = user.tasks.id(taskId);
   if (!task || task.isDeleted) return null;
 
-  // Preserve deleted subtasks
+  // Preserve previously soft-deleted subtasks
   const deletedSubtasks = task.subtasks.filter((s) => s.isDeleted);
 
-  // Add new subtasks (without isDeleted flag)
-  const formattedNewSubtasks = newSubtasks.map((s) => ({
-    title: s.title,
-    status: s.status || "pending",
-    isDeleted: false,
-  }));
+  // Convert and validate new subtasks
+  const formattedNewSubtasks = newSubtasks.map((s, index) => {
+    const parsedDate = moment(s.lastDate, "DD/MM/YYYY", true);
+    if (!parsedDate.isValid()) {
+      throw new Error(`Invalid date at Subtask ${index + 1}: ${s.lastDate}`);
+    }
 
+    return {
+      subject: s.subject,
+      lastDate: parsedDate.toDate(),
+      status: s.status || "pending",
+      isDeleted: false,
+    };
+  });
+
+  // Replace subtasks (soft-deleted preserved)
   task.subtasks = [...formattedNewSubtasks, ...deletedSubtasks];
-
   await user.save();
-  return task.subtasks;
+
+  return task.subtasks.filter((s) => !s.isDeleted); // return only active
 };
 
 module.exports = {
