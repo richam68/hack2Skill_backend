@@ -1,6 +1,6 @@
 # hack2Skill_backend
 
-# 🛠️ Task & Subtask Management Backend API
+# Task & Subtask Management Backend API
 
 A secure backend API built using **Express.js**, **MongoDB**, and **JWT-based authentication** to manage user tasks and subtasks. It supports **user registration**, **login**, **task/subtask CRUD operations**, **soft deletion**, and **data isolation per user**.
 
