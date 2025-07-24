@@ -1,10 +1,7 @@
-//mongoose is a object model design schema for our entities like contacts
-//  or user it helps us to communicate with mongodb database
 const mongoose = require("mongoose");
 
 const connectDb = async () => {
   try {
-    console.log("CONNECTION_URL", process.env.CONNECTION_URL);
     const constantConnect = await mongoose.connect(process.env.CONNECTION_URL);
     console.log(
       "Database connected:",

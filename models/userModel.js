@@ -16,7 +16,7 @@ const subtaskSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["pending", "in progress", "completed"],
+    enum: ["pending", "In progress", "completed"],
     default: "pending",
   },
   isDeleted: {

@@ -93,7 +93,6 @@ const removeTask = asyncHandler(async (req, res) => {
 //@route GET /api/tasks/:taskId/subtasks
 //@access Private
 const getSubtasksController = async (req, res) => {
-  console.log("req", req);
   try {
     const userId = req.user.id; // auth middleware sets req.user
     const { taskId } = req.params;
