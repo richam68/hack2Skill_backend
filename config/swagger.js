@@ -11,7 +11,7 @@ const options = {
     },
     servers: [
       {
-        url: "http://localhost:5000", // update if needed
+        url: process.env.BASE_URL || "http://localhost:5000", // fallback to local
       },
     ],
     components: {

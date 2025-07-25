@@ -3,6 +3,7 @@ const express = require("express");
 const connectDb = require("./config/dbConnection");
 const userRoutes = require("./routes/userRoutes");
 const taskRoutes = require("./routes/taskRoutes");
+const cors = require("cors");
 // Swagger setup
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger");
@@ -18,6 +19,8 @@ app.use(express.json());
 
 //for handling url encoded data
 app.use(express.urlencoded({ extended: true }));
+
+app.use(cors());
 
 // Mount Swagger Docs before routes
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
